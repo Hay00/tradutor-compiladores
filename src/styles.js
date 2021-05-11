@@ -21,23 +21,31 @@ export const Content = styled.div`
 
 export const CodeInput = styled.textarea`
     resize: none;
+    font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+        monospace;
     height: 700px;
     width: 800px;
-    padding: 10px;
+    padding: 1.5em;
     margin: 16px 20px;
+    border-radius: 4px;
+    border: none;
     box-shadow: 0px 2px 1px -1px rgb(0 0 0 / 20%),
         0px 1px 1px 0px rgb(0 0 0 / 14%), 0px 1px 3px 0px rgb(0 0 0 / 12%);
 `;
 
-export const CodeOutput = styled(SyntaxHighlighter).attrs(() => ({
+export const CodeArea = styled(SyntaxHighlighter).attrs(() => ({
     showLineNumbers: true,
     wrapLines: true,
     wrapLongLines: true,
-    editable: true,
+    customStyle: { padding: "1.5em" },
 }))`
+    && {
+        padding: 10px;
+    }
     height: 700px;
     width: 800px;
     margin: 16px 20px;
+    border-radius: 4px;
     box-shadow: 0px 2px 1px -1px rgb(0 0 0 / 20%),
         0px 1px 1px 0px rgb(0 0 0 / 14%), 0px 1px 3px 0px rgb(0 0 0 / 12%);
 `;
