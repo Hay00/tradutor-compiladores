@@ -10,7 +10,7 @@ import {
   Content,
   Title,
 } from './styles';
-import TextTransformer from './utils/textTransformer';
+import TextTransformer from './utils/translator';
 
 import { tokens } from './utils/tokenTable';
 
@@ -46,38 +46,8 @@ export default function App() {
    * VisualAlg -> JavaScript
    */
   function onPress() {
-    let code = TextTransformer.textToMap(input);
-    const { reservadas, operadores } = tokens;
-
-    let result = [];
-    for (let i = 0; i < code.length; i++) {
-      let linha = code[i];
-
-      for (let j = 0; j < linha.length; j++) {
-        let element = linha[j];
-
-        for (const key in reservadas) {
-          if (Object.hasOwnProperty.call(reservadas, key)) {
-            const { alg, js } = reservadas[key];
-            if (alg === element) {
-              code[i][j] = js;
-            }
-          }
-        }
-
-        for (const key in operadores) {
-          if (Object.hasOwnProperty.call(operadores, key)) {
-            const { alg, js } = operadores[key];
-            if (alg === element) {
-              code[i][j] = js;
-            }
-          }
-        }
-      }
-      result.push(linha.join(' '));
-    }
-
-    setOutput(result.join(' \n'));
+    let code = TextTransformer.translate(input);
+    setOutput(code);
   }
 
   return (
