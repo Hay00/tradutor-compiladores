@@ -4,28 +4,70 @@ import { vs2015 } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 import {
   Button,
-  CodeInput,
   CodeArea,
+  CodeInput,
   Container,
   Content,
   Title,
 } from './styles';
-import TextTransformer from './utils/translator';
 
-import { tokens } from './utils/tokenTable';
+import translate from './utils/translator';
 
-const initialInput = `algoritmo "Exemplo"
-
+const initialInput = `Algoritmo "testeDebug"
+// Disciplina   : [Linguagem e Lógica de Programação]
+// Professor   : Antonio Carlos Nicolodi
+// Descrição   : Aqui você descreve o que o programa faz! (função)
+// Autor(a)    : Vinicios Dutra Schulze
+// Data atual  : 6/2/2021
 Var
-    a, b : inteiro
+   a, b : inteiro
+   d, c : real
+   input: inteiro
 
+funcao func(valor1,valor2 :inteiro; operacao:caracter):real
+var resultado: inteiro
 inicio
-    para a de 1 ate 10 faca
-        escreva "Digite um valor:"
-        leia(b)
-    fimpara
-fimalgoritmo
+   escolha operacao
+   caso "+"
+      retorne valor1+valor2
+   caso "-"
+      retorne valor1-valor2
+   caso "/"
+      retorne valor1/valor2
+   caso "^"
+      retorne valor1^valor2
+   outrocaso
+      retorne 0
+   fimescolha
+fimfuncao
 
+Inicio
+   a <- 50
+   b := 60
+   se a > b entao
+      escreval("A é maior: ", a)
+   senao
+      escreval("B é maior: ", b)
+   fimse
+
+   escreva("Informe um valor inteiro: ")
+   leia(input)
+   escreva("Soma: ")
+   escreval(a+input)
+   escreva("Subtração: ")
+   escreval(a-input)
+   escreva("Divisão: ")
+   escreval(a/input)
+   escreva("Multiplicação: ")
+   escreval(a*input)
+
+   escreval(func(2,2,"+"))
+   escreval(func(2,2,"-"))
+   escreval(func(2,2,"*"))
+   escreval(func(2,2,"/"))
+   escreval(func(2,2,"?"))
+
+Fimalgoritmo
 `;
 
 const initialOutput = ` var a,b;
@@ -46,7 +88,7 @@ export default function App() {
    * VisualAlg -> JavaScript
    */
   function onPress() {
-    let code = TextTransformer.translate(input);
+    let code = translate(input);
     setOutput(code);
   }
 
