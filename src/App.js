@@ -85,6 +85,7 @@ export default function App() {
       const { parsedTokens, tokenCount } = translate(input);
       setOutput(parsedTokens);
       setTokenList(tokenCount);
+      navigator.clipboard.writeText(parsedTokens);
     } catch (e) {
       console.log(e.message);
     }
@@ -104,7 +105,7 @@ export default function App() {
         </CodeArea>
       </Content>
       {tokenList && (
-        <table style={{ margin: '1em' }}>
+        <table style={{ margin: 16 }}>
           <thead>
             <tr>
               <th>Token</th>
