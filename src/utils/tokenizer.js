@@ -3,6 +3,32 @@ const NEWLINE = /\n/;
 const WHITESPACE = /\s/;
 const NUMBERS = /[0-9]/;
 
+let tokenCount = {
+  equal: 0,
+  plus: 0,
+  minus: 0,
+  star: 0,
+  percent: 0,
+  caret: 0,
+  less: 0,
+  attr: 0,
+  colon: 0,
+  greater: 0,
+  pipe: 0,
+  and: 0,
+  paren: 0,
+  bracket: 0,
+  dot: 0,
+  comma: 0,
+  semi: 0,
+  comment: 0,
+  forwardslash: 0,
+  newline: 0,
+  number: 0,
+  word: 0,
+  string: 0,
+};
+
 /**
  * Transforma o código em tokens
  *
@@ -16,15 +42,17 @@ export function tokenizer(input) {
     let char = input[current];
 
     if (char === '=') {
+      tokenCount.equal += 1;
       tokens.push({
         type: 'equal',
-        value: ' = ',
+        value: '===',
       });
       current++;
       continue;
     }
 
     if (char === '+') {
+      tokenCount.plus += 1;
       tokens.push({
         type: 'plus',
         value: ' + ',
@@ -34,6 +62,7 @@ export function tokenizer(input) {
     }
 
     if (char === '-') {
+      tokenCount.minus += 1;
       tokens.push({
         type: 'minus',
         value: ' - ',
@@ -43,6 +72,7 @@ export function tokenizer(input) {
     }
 
     if (char === '*') {
+      tokenCount.star += 1;
       tokens.push({
         type: 'star',
         value: ' * ',
@@ -52,6 +82,7 @@ export function tokenizer(input) {
     }
 
     if (char === '%') {
+      tokenCount.percent += 1;
       tokens.push({
         type: 'percent',
         value: ' % ',
@@ -61,6 +92,7 @@ export function tokenizer(input) {
     }
 
     if (char === '^') {
+      tokenCount.caret += 1;
       tokens.push({
         type: 'caret',
         value: ' ^ ',
@@ -73,11 +105,13 @@ export function tokenizer(input) {
       const next = input[++current];
       if (next === '-') {
         current++;
+        tokenCount.attr += 1;
         tokens.push({
           type: 'attr',
           value: ' = ',
         });
       } else {
+        tokenCount.less += 1;
         tokens.push({
           type: 'less',
           value: '<',
@@ -90,11 +124,13 @@ export function tokenizer(input) {
       const next = input[++current];
       if (next === '=') {
         current++;
+        tokenCount.attr += 1;
         tokens.push({
           type: 'attr',
           value: ' = ',
         });
       } else {
+        tokenCount.colon += 1;
         tokens.push({
           type: 'colon',
           value: ':',
@@ -104,6 +140,7 @@ export function tokenizer(input) {
     }
 
     if (char === '>') {
+      tokenCount.greater += 1;
       tokens.push({
         type: 'greater',
         value: '>',
@@ -113,6 +150,7 @@ export function tokenizer(input) {
     }
 
     if (char === '|') {
+      tokenCount.pipe += 1;
       tokens.push({
         type: 'pipe',
         value: '|',
@@ -122,6 +160,7 @@ export function tokenizer(input) {
     }
 
     if (char === '&') {
+      tokenCount.and += 1;
       tokens.push({
         type: 'and',
         value: '&',
@@ -131,6 +170,7 @@ export function tokenizer(input) {
     }
 
     if (char === '(' || char === ')') {
+      tokenCount.paren += 1;
       tokens.push({
         type: 'paren',
         value: char,
@@ -140,6 +180,7 @@ export function tokenizer(input) {
     }
 
     if (char === '[' || char === ']') {
+      tokenCount.bracket += 1;
       tokens.push({
         type: 'bracket',
         value: char,
@@ -149,6 +190,7 @@ export function tokenizer(input) {
     }
 
     if (char === '.') {
+      tokenCount.dot += 1;
       tokens.push({
         type: 'dot',
         value: '.',
@@ -158,6 +200,7 @@ export function tokenizer(input) {
     }
 
     if (char === ',') {
+      tokenCount.comma += 1;
       tokens.push({
         type: 'comma',
         value: ',',
@@ -167,6 +210,7 @@ export function tokenizer(input) {
     }
 
     if (char === ';') {
+      tokenCount.semi += 1;
       tokens.push({
         type: 'semi',
         value: ';',
@@ -176,13 +220,14 @@ export function tokenizer(input) {
     }
 
     if (char === '/') {
-      // Se for comentário de uma linha descarta...
+      // Se for comentário de uma linha
       if (input[++current] === '/') {
         let content = '/';
         while (current < input.length && !NEWLINE.test(input[current])) {
           content += input[current];
           current++;
         }
+        tokenCount.comment += 1;
         tokens.push({
           type: 'comment',
           value: content,
@@ -201,6 +246,7 @@ export function tokenizer(input) {
       }
       // Divisão
       else {
+        tokenCount.forwardslash += 1;
         tokens.push({
           type: 'forwardslash',
           value: ' / ',
@@ -210,8 +256,9 @@ export function tokenizer(input) {
     }
 
     if (NEWLINE.test(char)) {
+      tokenCount.newline += 1;
       tokens.push({
-        type: 'linebreak',
+        type: 'newline',
         value: '\n',
       });
       current++;
@@ -225,11 +272,11 @@ export function tokenizer(input) {
 
     if (NUMBERS.test(char)) {
       let value = '';
-
       while (NUMBERS.test(char)) {
         value += char;
         char = input[++current];
       }
+      tokenCount.number += 1;
       tokens.push({
         type: 'number',
         value: value,
@@ -237,7 +284,7 @@ export function tokenizer(input) {
       continue;
     }
 
-    // Não é token
+    // Não é token especial
     if (LETTERS.test(char) || char === '_') {
       var value = char;
       if (++current < input.length) {
@@ -250,6 +297,7 @@ export function tokenizer(input) {
           char = input[++current];
         }
       }
+      tokenCount.word += 1;
       tokens.push({
         type: 'word',
         value: value,
@@ -266,6 +314,24 @@ export function tokenizer(input) {
         char = input[++current];
       }
       char = input[++current];
+      tokenCount.string += 1;
+      tokens.push({
+        type: 'string',
+        value: value,
+      });
+      continue;
+    }
+
+    if (char === "'") {
+      let value = '';
+      char = input[++current];
+
+      while (char !== "'") {
+        value += char;
+        char = input[++current];
+      }
+      char = input[++current];
+      tokenCount.string += 1;
       tokens.push({
         type: 'string',
         value: value,
@@ -276,5 +342,5 @@ export function tokenizer(input) {
     throw new TypeError('Caractere desconhecido: ' + char);
   }
 
-  return tokens;
+  return { tokens, tokenCount };
 }

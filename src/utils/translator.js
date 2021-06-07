@@ -2,9 +2,8 @@ import { parser } from './parser';
 import { tokenizer } from './tokenizer';
 
 export default function translate(code) {
-  const tokensList = tokenizer(code);
-  console.log('Tokens:\n');
-  console.log(tokensList);
-  const parsedTokens = parser(tokensList);
-  return parsedTokens;
+  const { tokens, tokenCount } = tokenizer(code);
+  // console.log(tokensList);
+  const parsedTokens = parser(tokens);
+  return { parsedTokens, tokenCount };
 }

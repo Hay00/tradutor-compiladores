@@ -49,7 +49,6 @@ export const CodeArea = styled(SyntaxHighlighter).attrs(() => ({
   box-shadow: 0px 2px 1px -1px rgb(0 0 0 / 20%),
     0px 1px 1px 0px rgb(0 0 0 / 14%), 0px 1px 3px 0px rgb(0 0 0 / 12%);
 `;
-
 export const Button = styled.button`
   background-color: #3f51b5;
   font-size: 1em;

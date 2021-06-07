@@ -1,6 +1,7 @@
 export function parser(code) {
   let mainFunc = 'main';
   let hasFunc = false;
+  let funcList = [];
 
   let current = 0;
   let tokens = code;
@@ -31,7 +32,11 @@ export function parser(code) {
         // Conta a quantidade de tipos de vars
         if (nextValue === ':') numVars++;
         // Encontra o fim da declaração das vars
-        if (nextValue === 'inicio' || nextValue === 'funcao') {
+        if (
+          nextValue === 'inicio' ||
+          nextValue === 'funcao' ||
+          nextValue === 'procedimento'
+        ) {
           varEnd = i;
           break;
         }
@@ -57,8 +62,8 @@ export function parser(code) {
           varCount++;
           continue;
         }
-        if (tokens[current].type === 'linebreak') {
-          if (tokens[current + 1].type === 'linebreak') {
+        if (tokens[current].type === 'newline') {
+          if (tokens[current + 1].type === 'newline') {
             continue;
           }
           if (varCount < numVars) {
@@ -104,8 +109,9 @@ export function parser(code) {
 
     if (tokenValue === 'funcao') {
       const name = tokens[++current].value.replace(/-/g, '_');
+      funcList.push(name);
       let args = '';
-      while (tokens[++current].type !== 'linebreak') {
+      while (tokens[++current].type !== 'newline') {
         if (tokens[current].type === 'colon') {
           current++;
           continue;
@@ -125,9 +131,33 @@ export function parser(code) {
       return '}';
     }
 
+    if (tokenValue === 'procedimento') {
+      const name = tokens[++current].value.replace(/-/g, '_');
+      funcList.push(name);
+      let args = '';
+      while (tokens[++current].type !== 'newline') {
+        if (tokens[current].type === 'colon') {
+          current++;
+          continue;
+        }
+        if (tokens[current].type === 'semi') {
+          args += ',';
+          continue;
+        }
+        args += tokens[current].value;
+      }
+      hasFunc = true;
+      return `function ${name}${args}{\n`;
+    }
+
+    if (tokenValue === 'fimprocedimento') {
+      hasFunc = false;
+      return '}';
+    }
+
     if (tokenValue === 'retorne') {
       let returnVal = '';
-      while (tokens[++current].type !== 'linebreak') {
+      while (tokens[++current].type !== 'newline') {
         returnVal += tokens[current].value;
       }
       return `return ${returnVal};\n`;
@@ -135,7 +165,7 @@ export function parser(code) {
 
     if (tokenValue === 'escolha') {
       let args = '';
-      while (tokens[++current].type !== 'linebreak') {
+      while (tokens[++current].type !== 'newline') {
         args += tokens[current].value;
       }
       return `switch(${args}){\n`;
@@ -150,7 +180,7 @@ export function parser(code) {
       }
 
       // Parâmetros do case
-      while (tokens[++current].type !== 'linebreak') {
+      while (tokens[++current].type !== 'newline') {
         if (tokens[current + 1].type === 'comma') {
           values += `${formatArgs(
             tokens[current].type,
@@ -176,11 +206,50 @@ export function parser(code) {
 
     if (tokenValue === 'fimescolha') return '}';
 
+    if (tokenValue === 'para') {
+      let v, begin, end, step;
+      let op = '<=';
+      v = tokens[++current].value;
+
+      while (tokens[++current].type !== 'newline') {
+        const value = tokens[current].value.toLowerCase();
+
+        if (value === 'de') {
+          begin = tokens[++current].value;
+          continue;
+        }
+        if (value === 'ate') {
+          end = tokens[++current].value;
+          continue;
+        }
+        if (value === 'passo') {
+          step = '';
+          while (tokens[++current].value.toLowerCase() !== 'faca') {
+            step += tokens[current].value.trim();
+          }
+          if (step.match(/-/g)) {
+            op = '>=';
+          }
+          break;
+        }
+        if (value === 'faca') {
+          break;
+        }
+      }
+
+      if (step) {
+        return `for(${v} = ${begin}; ${v} ${op} ${end}; ${v}+= ${step} ){\n`;
+      }
+      return `for(${v} = ${begin}; ${v} <= ${end}; ${v}++){\n`;
+    }
+
+    if (tokenValue === 'fimpara') return '}';
+
     if (tokenValue === 'repita') return 'do{';
 
     if (tokenValue === 'ate') {
       let args = '';
-      while (tokens[++current].type !== 'linebreak') {
+      while (tokens[++current].type !== 'newline') {
         if (tokens[current].value.toLowerCase() === 'e') {
           args += ' && ';
           continue;
@@ -191,7 +260,7 @@ export function parser(code) {
         }
         args += word();
       }
-      return `}while(${args});\n`;
+      return `}while(!(${args}));\n`;
     }
 
     if (tokenValue === 'enquanto') {
@@ -207,21 +276,24 @@ export function parser(code) {
         }
         args += word();
       }
-      return `while${args}{\n`;
+      return `while(${args}){\n`;
     }
 
     if (tokenValue === 'fimenquanto') return '}';
 
     if (tokenValue === 'escreva' || tokenValue === 'escreval') {
-      let log = 'console.log';
-      while (tokens[++current].type !== 'linebreak') {
+      let args = '';
+      while (tokens[++current].type !== 'newline') {
         if (tokens[current].type === 'string') {
-          log += `"${tokens[current].value}"`;
+          args += `"${tokens[current].value}"`;
         } else {
-          log += tokens[current].value;
+          args += tokens[current].value;
         }
       }
-      return log + ';\n';
+      if (args) {
+        return `console.log${args};\n`;
+      }
+      return `console.log('\\n');\n`;
     }
 
     if (tokenValue === 'leia') {
@@ -237,7 +309,28 @@ export function parser(code) {
       return ' % ';
     }
 
-    return tokenValue;
+    const nextType = tokens[current + 1].type;
+    if (nextType === 'attr') {
+      let attr = tokenValue;
+      while (tokens[++current].type !== 'newline') {
+        attr += word();
+      }
+      return `${attr}\n`;
+    }
+
+    if (funcList.includes(tokenValue)) {
+      let funcLine = tokens[current].value;
+      while (tokens[++current].type !== 'newline') {
+        funcLine += word();
+      }
+      return `${funcLine};\n`;
+    }
+
+    if (tokens[current].type === 'string') {
+      return `"${tokenValue}"`;
+    } else {
+      return tokenValue;
+    }
   }
 
   /**
@@ -261,13 +354,42 @@ export function parser(code) {
     // throw new TypeError(token.type);
   }
 
+  // Itera os tokens
   while (current < tokens.length) {
-    const a = walk();
-    result += a;
-    lines.push(a);
+    lines.push(walk());
     current++;
   }
 
-  result += `\n${mainFunc}();\n`;
+  let depth = 0;
+  // Formata o código
+  lines.forEach((line) => {
+    if (line.match(/}|{/g)?.length === 2) {
+      depth--;
+      result += ident(depth) + line;
+      depth++;
+      return;
+    }
+    if (line.match(/{/g)) {
+      result += ident(depth) + line;
+      depth++;
+      return;
+    }
+    if (line.match(/}/g)) {
+      depth--;
+      result += ident(depth) + line;
+      return;
+    }
+    result += ident(depth) + line;
+  });
+
+  result += `${mainFunc}();\n`;
   return result;
+}
+
+function ident(len) {
+  let spaces = '';
+  for (let i = 0; i < len; i++) {
+    spaces += '  ';
+  }
+  return spaces;
 }

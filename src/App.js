@@ -14,18 +14,18 @@ import {
 import translate from './utils/translator';
 
 const initialInput = `Algoritmo "testeDebug"
-// Disciplina   : [Linguagem e Lógica de Programação]
-// Professor   : Antonio Carlos Nicolodi
+// Disciplina   : [Compiladores]
+// Professor   : Cavalheiro
 // Descrição   : Aqui você descreve o que o programa faz! (função)
 // Autor(a)    : Vinicios Dutra Schulze
-// Data atual  : 6/2/2021
+// Data atual  : 6/6/2021
 Var
    a, b : inteiro
    d, c : real
    input: inteiro
 
 funcao func(valor1,valor2 :inteiro; operacao:caracter):real
-var resultado: inteiro
+var resultado: real
 inicio
    escolha operacao
    caso "+"
@@ -70,17 +70,10 @@ Inicio
 Fimalgoritmo
 `;
 
-const initialOutput = ` var a,b;
-
-  for(a = 1; a < 10; a++){
-    console.log("Digite um valor:");
-    b = readline();
-  }
-`;
-
 export default function App() {
   const [input, setInput] = useState(initialInput);
-  const [output, setOutput] = useState(initialOutput);
+  const [output, setOutput] = useState('');
+  const [tokenList, setTokenList] = useState(null);
 
   /**
    * Realiza a tradução do código
@@ -88,8 +81,13 @@ export default function App() {
    * VisualAlg -> JavaScript
    */
   function onPress() {
-    let code = translate(input);
-    setOutput(code);
+    try {
+      const { parsedTokens, tokenCount } = translate(input);
+      setOutput(parsedTokens);
+      setTokenList(tokenCount);
+    } catch (e) {
+      console.log(e.message);
+    }
   }
 
   return (
@@ -105,6 +103,26 @@ export default function App() {
           {output}
         </CodeArea>
       </Content>
+      {tokenList && (
+        <table style={{ margin: '1em' }}>
+          <thead>
+            <tr>
+              <th>Token</th>
+              <th>Quantidade</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(tokenList).map(([title, content], key) => (
+              <tr key={key}>
+                <td>
+                  <b>{title}</b>
+                </td>
+                <td>{content}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </Container>
   );
 }
